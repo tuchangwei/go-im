@@ -1,6 +1,9 @@
 package main
 
-import "net"
+import (
+	"net"
+	"strings"
+)
 
 type User struct {
 	Name string
@@ -40,10 +43,23 @@ func (u *User) HandleMessage(msg string) {
 			delete(u.server.OnlineUsers, name)
 			u.server.OnlineUsers[name] = u
 			u.Name = name
-			u.SendMsg("用户名已修改为：" + u.Name)
+			u.SendMsg("用户名已修改为：" + u.Name )
 		}
 		u.server.Locker.Unlock()
 
+	} else if len(msg) > 4 && msg[:3]=="to|" {//私聊，格式为"to|jack|hello"
+		strArr := strings.Split(msg, "|")
+		if len(strArr) != 3 {
+			u.SendMsg("私聊格式为\"to|jack|hello\"\n")
+		} else {
+			toWho := strArr[1]
+			msg := strArr[2]
+			if who := u.server.OnlineUsers[toWho]; who != nil {
+				who.SendMsg(msg + "\n")
+			} else {
+				u.SendMsg(toWho + "未上线")
+			}
+		}
 	} else {
 		u.server.broadcastMessage(u, msg)
 	}

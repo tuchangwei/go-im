@@ -42,7 +42,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	for {
 		select {
 		case <-isLive:
-		case <- time.After(10 * time.Second):
+		case <- time.After(300 * time.Second):
 			user.SendMsg("你被踢了")
 			s.Locker.Lock()
 			defer s.Locker.Unlock()
