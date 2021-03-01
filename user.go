@@ -38,12 +38,12 @@ func (u *User) HandleMessage(msg string) {
 		u.server.Locker.Lock()
 		_, ok := u.server.OnlineUsers[name]
 		if ok {
-			u.SendMsg("用户名已存在")
+			u.SendMsg("用户名已存在\n")
 		} else {
 			delete(u.server.OnlineUsers, name)
 			u.server.OnlineUsers[name] = u
 			u.Name = name
-			u.SendMsg("用户名已修改为：" + u.Name )
+			u.SendMsg("用户名已修改为：" + u.Name + "\n")
 		}
 		u.server.Locker.Unlock()
 
