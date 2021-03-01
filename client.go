@@ -49,10 +49,11 @@ func (c *Client) rename() {
 	}
 }
 func (c *Client) PublicChat() {
+	fmt.Println("请输入消息，exit表示退出")
 	for {
-		fmt.Println("请输入消息，exit表示退出")
 		var msg string
 		fmt.Scanln(&msg)
+		fmt.Println(">>>>" + msg)
 		if msg == "exit" {
 			fmt.Println("已退出公聊模式")
 			break
@@ -61,10 +62,46 @@ func (c *Client) PublicChat() {
 			_, err := c.conn.Write([]byte(msg+"\n"))
 			if err != nil {
 				fmt.Println("c.conn.Write error:", err)
+				break
 			}
 		}
 	}
 }
+func (c *Client) PrivateChat() {
+	for {
+		fmt.Println("请输入用户名，exit表示退出")
+		_, err := c.conn.Write([]byte("who"+"\n"))
+		if err != nil {
+			return
+		}
+		var name string
+		fmt.Scanln(&name)
+		if name == "exit" {
+			return
+		}
+		fmt.Printf("开始和%s聊天吧，请输入聊天内容, exit表示退出聊天\n", name)
+		for {
+			var msg string
+			fmt.Scanln(&msg)
+			if msg == "exit" {
+				break
+			}
+			if msg != "" {
+				_, err := c.conn.Write([]byte("to|"+ name + "|" + msg+"\n"))
+				if err != nil {
+					fmt.Println("c.conn.Write error:", err)
+				}
+			}
+
+		}
+
+
+
+
+	}
+
+}
+
 func (c *Client) HandleResponse()  {
 	io.Copy(os.Stdout, c.conn)
 }
@@ -78,7 +115,7 @@ func (c *Client) Run() {
 		if c.menu() {
 			switch c.menuType {
 			case 0://退出
-				fmt.Println("退出模式")
+				fmt.Println("退出")
 				return
 			case 1://公聊模式
 				fmt.Println("公聊模式")
@@ -86,6 +123,7 @@ func (c *Client) Run() {
 				break
 			case 2://私聊模式
 				fmt.Println("私聊模式")
+				c.PrivateChat()
 				break
 			case 3://重命名
 				fmt.Println("重命名模式")
@@ -105,7 +143,6 @@ func init() {
 func main() {
 	flag.Parse()
 	client := NewClient(serverIP, serverPort)
-	defer client.conn.Close()
 	if client == nil {
 		fmt.Println("连接服务器失败")
 		return
